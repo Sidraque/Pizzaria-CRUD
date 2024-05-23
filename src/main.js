@@ -5,13 +5,13 @@ import App from './App.vue';
 import router from './router';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyD8Z7AA5B5QRLxVkSvbqyNUAN5ofwPAVa8",
-  authDomain: "pizzaria-crud.firebaseapp.com",
-  projectId: "pizzaria-crud",
-  storageBucket: "pizzaria-crud.appspot.com",
-  messagingSenderId: "1069015868955",
-  appId: "1:1069015868955:web:9d7633690172f875197abe",
-  measurementId: "G-V8KXXS05YS"
+  apiKey: process.env.VUE_APP_FIREBASE_API_KEY,
+  authDomain: process.env.VUE_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.VUE_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.VUE_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.VUE_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.VUE_APP_FIREBASE_APP_ID,
+  measurementId: process.env.VUE_APP_FIREBASE_MEASUREMENT_ID
 };
 
 const app = initializeApp(firebaseConfig);
