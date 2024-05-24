@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
-import Vue from 'vue';
+import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
 
@@ -14,12 +14,11 @@ const firebaseConfig = {
   measurementId: process.env.VUE_APP_FIREBASE_MEASUREMENT_ID
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// Initialize Firebase
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
 
-Vue.prototype.$db = db;
+const app = createApp(App);
+app.config.globalProperties.$db = db;
 
-new Vue({
-  router,
-  render: h => h(App)
-}).$mount('#app')
+app.use(router).mount('#app');
