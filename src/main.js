@@ -21,4 +21,7 @@ const db = getFirestore(firebaseApp);
 const app = createApp(App);
 app.config.globalProperties.$db = db;
 
-app.use(router).mount('#app');
+app.use(router);
+app.mount('#app');
+
+export { db };
