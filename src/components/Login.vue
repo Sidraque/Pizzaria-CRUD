@@ -4,7 +4,7 @@
     <input v-model="email" placeholder="Email">
     <input v-model="password" placeholder="Senha" type="password">
     <button @click="login">Entrar</button>
-    <p>Não tem uma conta? <router-link to="/register">Registre-se</router-link></p>
+    <p>Não tem uma conta? <router-link to="/cadastro">Cadastre-se</router-link></p>
   </div>
 </template>
 
