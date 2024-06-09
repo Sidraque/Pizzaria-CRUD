@@ -5,16 +5,16 @@
       <select v-model="clienteId" required>
         <option v-for="cliente in clientes" :key="cliente.id" :value="cliente.id">{{ cliente.nome }}</option>
       </select>
-      <select v-model="produtoId" required>
+      <select v-model="produtoId" @change="updateProdutoSelecionado" required>
         <option v-for="produto in produtos" :key="produto.id" :value="produto.id">{{ produto.nome }}</option>
       </select>
-      <input v-model="quantidade" placeholder="Quantidade" type="number" required>
-      <input v-model="total" placeholder="Total" type="number" required>
+      <input v-model.number="quantidade" @input="calcularTotal" placeholder="Quantidade" type="number" required>
+      <input v-model="total" placeholder="Total" readonly>
       <input v-model="dataPedido" placeholder="Data do Pedido" type="date" required>
       <button type="submit">Adicionar</button>
     </form>
     <ul>
-      <li v-for="pedido in pedidos" :key="pedido.id">{{ pedido.clienteNome }} - {{ pedido.produtoNome }} - {{ pedido.total }}</li>
+      <li v-for="pedido in pedidos" :key="pedido.id">{{ pedido.clienteNome }} - {{ pedido.produtoNome }} - R$ {{ pedido.total.toFixed(2) }}</li>
     </ul>
   </div>
 </template>
@@ -33,7 +33,8 @@ export default {
       dataPedido: '',
       pedidos: [],
       clientes: [],
-      produtos: []
+      produtos: [],
+      produtoSelecionado: null
     }
   },
   created() {
@@ -53,6 +54,17 @@ export default {
     });
   },
   methods: {
+    updateProdutoSelecionado() {
+      this.produtoSelecionado = this.produtos.find(produto => produto.id === this.produtoId);
+      this.calcularTotal();
+    },
+    calcularTotal() {
+      if (this.produtoSelecionado) {
+        this.total = (this.produtoSelecionado.preco * this.quantidade).toFixed(2);
+      } else {
+        this.total = 0;
+      }
+    },
     async addPedido() {
       const pedidosCollection = collection(db, 'pedidos');
       const cliente = this.clientes.find(cliente => cliente.id === this.clienteId);
@@ -62,7 +74,7 @@ export default {
           clienteId: this.clienteId,
           produtoId: this.produtoId,
           quantidade: this.quantidade,
-          total: this.total,
+          total: parseFloat(this.total),
           dataPedido: this.dataPedido,
           clienteNome: cliente ? cliente.nome : '',
           produtoNome: produto ? produto.nome : ''
