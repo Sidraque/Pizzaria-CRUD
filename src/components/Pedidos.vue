@@ -14,7 +14,7 @@
       <button type="submit">Adicionar</button>
     </form>
     <ul>
-      <li v-for="pedido in pedidos" :key="pedido.id">{{ pedido.clienteNome }} - {{ pedido.produtoNome }} - {{ pedido.total }}</li>
+      <li v-for="pedido in pedidos" :key="pedido.id">{{ pedido.clienteNome }} - {{ pedido.produtoNome }} - R$ {{ pedido.total }}</li>
     </ul>
   </div>
 </template>

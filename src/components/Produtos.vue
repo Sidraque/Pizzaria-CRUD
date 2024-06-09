@@ -12,7 +12,7 @@
       <button type="submit">Adicionar</button>
     </form>
     <ul>
-      <li v-for="produto in produtos" :key="produto.id">{{ produto.nome }}</li>
+      <li v-for="produto in produtos" :key="produto.id">{{ produto.nome }} - R$ {{ produto.preco }}</li>
     </ul>
   </div>
 </template>
