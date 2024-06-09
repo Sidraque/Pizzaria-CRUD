@@ -3,7 +3,7 @@
     <h2>Produtos</h2>
     <form @submit.prevent="addProduto">
       <input v-model="nome" placeholder="Nome" required>
-      <input v-model="preco" placeholder="Preço" type="number" required>
+      <input v-model.number="preco" placeholder="Preço" step="0.01" required>
       <select v-model="categoria" required>
         <option>Pizza</option>
         <option>Bebida</option>
@@ -12,7 +12,7 @@
       <button type="submit">Adicionar</button>
     </form>
     <ul>
-      <li v-for="produto in produtos" :key="produto.id">{{ produto.nome }} - R$ {{ produto.preco }}</li>
+      <li v-for="produto in produtos" :key="produto.id">{{ produto.nome }} - R$ {{ produto.preco.toFixed(2) }}</li>
     </ul>
   </div>
 </template>
@@ -42,7 +42,7 @@ export default {
       try {
         await addDoc(produtosCollection, {
           nome: this.nome,
-          preco: this.preco,
+          preco: parseFloat(this.preco),
           categoria: this.categoria
         });
         this.nome = '';
