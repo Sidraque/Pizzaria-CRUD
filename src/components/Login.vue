@@ -1,26 +1,31 @@
 <template>
   <div>
     <h2>Login</h2>
-    <input v-model="username" placeholder="Usuário">
+    <input v-model="email" placeholder="Email">
     <input v-model="password" placeholder="Senha" type="password">
     <button @click="login">Entrar</button>
+    <p>Não tem uma conta? <router-link to="/cadastro">Cadastre-se</router-link></p>
   </div>
 </template>
 
 <script>
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../main';
+
 export default {
   data() {
     return {
-      username: '',
+      email: '',
       password: ''
-    }
+    };
   },
   methods: {
-    login() {
-      if (this.username === 'admin' && this.password === '1234') {
+    async login() {
+      try {
+        await signInWithEmailAndPassword(auth, this.email, this.password);
         this.$router.push('/clientes');
-      } else {
-        alert('Usuário ou senha incorretos');
+      } catch (error) {
+        alert('Falha no login: ' + error.message);
       }
     }
   }

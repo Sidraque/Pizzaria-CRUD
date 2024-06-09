@@ -1,8 +1,9 @@
-import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
+import { initializeApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.VUE_APP_FIREBASE_API_KEY,
@@ -16,11 +17,21 @@ const firebaseConfig = {
 
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
+const auth = getAuth(firebaseApp);
 
 const app = createApp(App);
 app.config.globalProperties.$db = db;
+app.config.globalProperties.$auth = auth;
 
 app.use(router);
 app.mount('#app');
 
-export { db };
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log('Usuário está conectado:', user);
+  } else {
+    console.log('Nenhum usuário está conectado');
+  }
+});
+
+export { db, auth };
