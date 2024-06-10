@@ -122,7 +122,9 @@ export default {
       this.dataPedido = pedido.dataPedido;
       this.status = pedido.status;
       this.pedidoId = pedido.id;
+      this.produtoSelecionado = this.produtos.find(produto => produto.id === this.produtoId);
       this.editMode = true;
+      this.calcularTotal();
     },
     cancelEdit() {
       this.resetForm();
@@ -136,6 +138,7 @@ export default {
       this.dataPedido = '';
       this.status = 'Pendente';
       this.pedidoId = null;
+      this.produtoSelecionado = null;
     }
   }
 }
