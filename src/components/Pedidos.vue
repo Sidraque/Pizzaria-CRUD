@@ -13,9 +13,9 @@
       <input v-model="dataPedido" placeholder="Data do Pedido" type="date" required>
       <select v-model="status" required>
         <option>Pendente</option>
-        <option>Em preparo</option>
-        <option>Enviado</option>
-        <option>Entregue</option>
+        <option v-if="editMode">Em preparo</option>
+        <option v-if="editMode">Enviado</option>
+        <option v-if="editMode">Entregue</option>
       </select>
       <button type="submit">{{ editMode ? 'Atualizar' : 'Adicionar' }}</button>
       <button v-if="editMode" @click="cancelEdit">Cancelar</button>
@@ -29,6 +29,7 @@
     </ul>
   </div>
 </template>
+
 <script>
 import { db } from '../main';
 import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';

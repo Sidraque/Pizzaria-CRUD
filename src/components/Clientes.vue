@@ -5,7 +5,7 @@
       <input v-model="nome" placeholder="Nome" required>
       <input v-model="rua" placeholder="Rua" required>
       <input v-model="bairro" placeholder="Bairro" required>
-      <input v-model="numero" placeholder="Número" type="number" required>
+      <input v-model="numero" placeholder="Número" required>
       <input v-model="cidade" placeholder="Cidade" required>
       <input v-model="cep" placeholder="CEP" @blur="buscaCep" required>
       <input v-model="estado" placeholder="Estado" required>
