@@ -16,10 +16,15 @@
         <option>Feminino</option>
         <option>Outro</option>
       </select>
-      <button type="submit">Adicionar</button>
+      <button type="submit">{{ editMode ? 'Atualizar' : 'Adicionar' }}</button>
+      <button v-if="editMode" @click="cancelEdit">Cancelar</button>
     </form>
     <ul>
-      <li v-for="cliente in clientes" :key="cliente.id">{{ cliente.nome }}</li>
+      <li v-for="cliente in clientes" :key="cliente.id">
+        {{ cliente.nome }}
+        <button @click="editCliente(cliente)">Editar</button>
+        <button @click="deleteCliente(cliente.id)">Excluir</button>
+      </li>
     </ul>
   </div>
 </template>
@@ -27,7 +32,7 @@
 <script>
 import axios from 'axios';
 import { db } from '../main';
-import { collection, onSnapshot, addDoc } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 
 export default {
   data() {
@@ -42,7 +47,9 @@ export default {
       telefone: '',
       cpf: '',
       sexo: '',
-      clientes: []
+      clientes: [],
+      editMode: false,
+      clienteId: null
     }
   },
   created() {
@@ -54,7 +61,22 @@ export default {
   methods: {
     async addCliente() {
       const clientesCollection = collection(db, 'clientes');
-      try {
+      if (this.editMode) {
+        const clienteDoc = doc(db, 'clientes', this.clienteId);
+        await updateDoc(clienteDoc, {
+          nome: this.nome,
+          rua: this.rua,
+          bairro: this.bairro,
+          numero: this.numero,
+          cidade: this.cidade,
+          cep: this.cep,
+          estado: this.estado,
+          telefone: this.telefone,
+          cpf: this.cpf,
+          sexo: this.sexo
+        });
+        this.editMode = false;
+      } else {
         await addDoc(clientesCollection, {
           nome: this.nome,
           rua: this.rua,
@@ -67,10 +89,43 @@ export default {
           cpf: this.cpf,
           sexo: this.sexo
         });
-        this.nome = this.rua = this.bairro = this.numero = this.cidade = this.cep = this.estado = this.telefone = this.cpf = this.sexo = '';
-      } catch (error) {
-        console.error('Erro ao adicionar cliente:', error);
       }
+      this.resetForm();
+    },
+    async deleteCliente(id) {
+      const clienteDoc = doc(db, 'clientes', id);
+      await deleteDoc(clienteDoc);
+    },
+    editCliente(cliente) {
+      this.nome = cliente.nome;
+      this.rua = cliente.rua;
+      this.bairro = cliente.bairro;
+      this.numero = cliente.numero;
+      this.cidade = cliente.cidade;
+      this.cep = cliente.cep;
+      this.estado = cliente.estado;
+      this.telefone = cliente.telefone;
+      this.cpf = cliente.cpf;
+      this.sexo = cliente.sexo;
+      this.clienteId = cliente.id;
+      this.editMode = true;
+    },
+    cancelEdit() {
+      this.resetForm();
+      this.editMode = false;
+    },
+    resetForm() {
+      this.nome = '';
+      this.rua = '';
+      this.bairro = '';
+      this.numero = '';
+      this.cidade = '';
+      this.cep = '';
+      this.estado = '';
+      this.telefone = '';
+      this.cpf = '';
+      this.sexo = '';
+      this.clienteId = null;
     },
     buscaCep() {
       axios.get(`https://viacep.com.br/ws/${this.cep}/json/`)
