@@ -1,16 +1,18 @@
 <template>
-  <div>
+  <div class="container">
     <h2>Login</h2>
-    <input v-model="email" placeholder="Email">
-    <input v-model="password" placeholder="Senha" type="password">
-    <button @click="login">Entrar</button>
-    <p>Não tem uma conta? <router-link to="/cadastro">Cadastre-se</router-link></p>
+    <form @submit.prevent="login">
+      <input v-model="email" type="email" placeholder="Email" required>
+      <input v-model="password" type="password" placeholder="Senha" required>
+      <button type="submit">Entrar</button>
+      <p>Não tem uma conta? <router-link to="/cadastro">Cadastre-se</router-link></p>
+    </form>
   </div>
 </template>
 
 <script>
-import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../main';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 export default {
   data() {
@@ -25,9 +27,9 @@ export default {
         await signInWithEmailAndPassword(auth, this.email, this.password);
         this.$router.push('/clientes');
       } catch (error) {
-        alert('Falha no login: ' + error.message);
+        console.error('Erro ao fazer login:', error);
       }
     }
   }
-}
+};
 </script>
