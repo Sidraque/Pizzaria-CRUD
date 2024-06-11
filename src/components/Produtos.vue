@@ -3,7 +3,7 @@
     <h2>Produtos</h2>
     <form @submit.prevent="addProduto">
       <input v-model="nome" placeholder="Nome" required>
-      <input v-model.number="preco" placeholder="Preço" type="number" step="0.01" required>
+      <input v-model.number="preco" placeholder="Preço" step="0.01" required>
       <select v-model="categoria" required>
         <option>Pizza</option>
         <option>Bebida</option>
