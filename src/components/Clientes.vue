@@ -1,31 +1,36 @@
 <template>
-  <div>
+  <div class="container">
     <h2>Clientes</h2>
-    <form @submit.prevent="addCliente">
-      <input v-model="nome" placeholder="Nome" required>
-      <input v-model="rua" placeholder="Rua" required>
-      <input v-model="bairro" placeholder="Bairro" required>
-      <input v-model="numero" placeholder="Número" required>
-      <input v-model="cidade" placeholder="Cidade" required>
-      <input v-model="cep" placeholder="CEP" @blur="buscaCep" required>
-      <input v-model="estado" placeholder="Estado" required>
-      <input v-model="telefone" placeholder="Telefone" required>
-      <input v-model="cpf" placeholder="CPF" required>
-      <select v-model="sexo" required>
-        <option>Masculino</option>
-        <option>Feminino</option>
-        <option>Outro</option>
-      </select>
-      <button type="submit">{{ editMode ? 'Atualizar' : 'Adicionar' }}</button>
-      <button v-if="editMode" @click="cancelEdit">Cancelar</button>
-    </form>
-    <ul>
-      <li v-for="cliente in clientes" :key="cliente.id">
-        {{ cliente.nome }}
-        <button @click="editCliente(cliente)">Editar</button>
-        <button @click="deleteCliente(cliente.id)">Excluir</button>
-      </li>
-    </ul>
+    <div class="form-list-container">
+      <form @submit.prevent="addCliente" class="form">
+        <input v-model="nome" placeholder="Nome" required>
+        <input v-model="rua" placeholder="Rua" required>
+        <input v-model="bairro" placeholder="Bairro" required>
+        <input v-model="numero" placeholder="Número" required>
+        <input v-model="cidade" placeholder="Cidade" required>
+        <input v-model="cep" placeholder="CEP" @blur="buscaCep" required>
+        <input v-model="estado" placeholder="Estado" required>
+        <input v-model="telefone" placeholder="Telefone" required>
+        <input v-model="cpf" placeholder="CPF" required>
+        <select v-model="sexo" required>
+          <option>Masculino</option>
+          <option>Feminino</option>
+          <option>Outro</option>
+        </select>
+        <button type="submit">{{ editMode ? 'Atualizar' : 'Adicionar' }}</button>
+        <button v-if="editMode" class="cancel" @click="cancelEdit">Cancelar</button>
+      </form>
+      <ul class="client-list">
+        <li v-for="cliente in clientes" :key="cliente.id" class="client-item">
+          <span>{{ cliente.nome }}</span>
+          <div class="actions">
+            <button @click="editCliente(cliente)" class="edit">Editar</button>
+            <button @click="deleteCliente(cliente.id)" class="delete">Excluir</button>
+            <button @click="detalhesCliente(cliente.id)" class="details">Detalhes</button>
+          </div>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
@@ -110,6 +115,9 @@ export default {
       this.clienteId = cliente.id;
       this.editMode = true;
     },
+    detalhesCliente(id) {
+      this.$router.push(`/clientes/${id}`);
+    },
     cancelEdit() {
       this.resetForm();
       this.editMode = false;
@@ -145,3 +153,126 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.container {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 1000px;
+  margin-top: 200px;
+}
+
+.form-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: #f7f7f7;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+input, select {
+  margin-bottom: 10px;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+button {
+  padding: 10px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: #218838;
+}
+
+button.cancel {
+  background-color: #dc3545;
+}
+
+button.cancel:hover {
+  background-color: #c82333;
+}
+
+h2 {
+  margin-bottom: 20px;
+  color: #333;
+  text-align: center;
+  font-size: 24px;
+}
+
+.client-list {
+  list-style: none;
+  padding: 0;
+  flex: 1;
+  background: #f7f7f7;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.client-item {
+  background: #fff;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.client-item button {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.client-item button.edit {
+  background: #ffc107;
+}
+
+.client-item button.delete {
+  background: #dc3545;
+}
+
+.client-item button.details {
+  background: #17a2b8;
+}
+
+.client-item button:hover {
+  opacity: 0.8;
+}
+
+@media (min-width: 768px) {
+  .form-list-container {
+    flex-direction: row;
+  }
+
+  form, .client-list {
+    flex: 1;
+    min-width: 0;
+  }
+}
+</style>

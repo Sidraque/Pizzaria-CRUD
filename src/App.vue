@@ -1,12 +1,14 @@
 <template>
   <div id="app">
-    <nav v-if="user">
-      <router-link to="/clientes">Clientes</router-link> |
-      <router-link to="/produtos">Produtos</router-link> |
-      <router-link to="/pedidos">Pedidos</router-link> |
-      <button @click="logout">Desconectar</button>
+    <nav v-if="user" class="navbar">
+      <router-link to="/clientes" class="nav-link">Clientes</router-link>
+      <router-link to="/produtos" class="nav-link">Produtos</router-link>
+      <router-link to="/pedidos" class="nav-link">Pedidos</router-link>
+      <button @click="logout" class="nav-button">Desconectar</button>
     </nav>
-    <router-view/>
+    <div class="main-content">
+      <router-view/>
+    </div>
   </div>
 </template>
 
@@ -40,13 +42,43 @@ export default {
 </script>
 
 <style>
-nav {
-  margin-bottom: 20px;
+.navbar {
+  background-color: #333;
+  padding: 7px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: 1000;
 }
-nav a {
-  margin-right: 10px;
+
+.nav-link {
+  color: white;
+  text-decoration: none;
 }
-button {
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+
+.nav-button {
+  padding: 10px 15px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
   cursor: pointer;
+}
+
+.nav-button:hover {
+  background-color: #c82333;
+}
+
+.main-content {
+  margin-top: 50px;
+  padding: 20px;
 }
 </style>

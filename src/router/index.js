@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Login from '../components/Login.vue';
 import Cadastro from '../components/Cadastro.vue';
+import ClienteDetalhes from '../components/ClienteDetalhes.vue';
 import Clientes from '../components/Clientes.vue';
 import BuscaCEP from '../components/BuscaCEP.vue';
 import Produtos from '../components/Produtos.vue';
@@ -15,6 +16,10 @@ const routes = [
     path: '/clientes',
     component: Clientes,
     meta: { requiresAuth: true }
+  },
+  { path: '/clientes/:id', 
+    component: ClienteDetalhes, 
+    props: true 
   },
   {
     path: '/busca-cep',
