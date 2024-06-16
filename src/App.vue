@@ -1,52 +1,57 @@
 <template>
-  <div id="app">
-    <nav v-if="user">
-      <router-link to="/clientes">Clientes</router-link> |
-      <router-link to="/produtos">Produtos</router-link> |
-      <router-link to="/pedidos">Pedidos</router-link> |
-      <button @click="logout">Desconectar</button>
-    </nav>
-    <router-view/>
-  </div>
+  <v-app>
+    <v-navigation-drawer v-model="drawer" app>
+      <v-list>
+        <v-list-item
+          v-for="(item, index) in items"
+          :key="index"
+          @click="navigateTo(item.route)"
+        >
+          <v-list-item-title>{{ item.title }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item @click="logout">
+          <v-list-item-title>Desconectar</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+
+    <v-app-bar app>
+      <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-toolbar-title>Pizzaria NR</v-toolbar-title>
+    </v-app-bar>
+
+    <v-main>
+      <v-container>
+        <router-view />
+      </v-container>
+    </v-main>
+  </v-app>
 </template>
 
 <script>
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth } from './main';
-
 export default {
-  name: 'App',
   data() {
     return {
-      user: null
-    };
-  },
-  created() {
-    onAuthStateChanged(auth, (user) => {
-      this.user = user;
-    });
+      drawer: false,
+      items: [
+        { title: 'Clientes', route: '/clientes' },
+        { title: 'Produtos', route: '/produtos' },
+        { title: 'Pedidos', route: '/pedidos' },
+      ],
+    }
   },
   methods: {
-    async logout() {
-      try {
-        await signOut(auth);
-        this.$router.push('/login');
-      } catch (error) {
-        console.error('Erro ao desconectar:', error);
-      }
+    navigateTo(route) {
+      this.$router.push(route);
+    },
+    logout() {
+      this.$router.push('/');
     }
   }
 }
 </script>
 
 <style>
-nav {
-  margin-bottom: 20px;
-}
-nav a {
-  margin-right: 10px;
-}
-button {
-  cursor: pointer;
-}
+@import '~vuetify/styles';
+@import '~@mdi/font/css/materialdesignicons.css';
 </style>
