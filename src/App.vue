@@ -1,84 +1,57 @@
 <template>
-  <div id="app">
-    <nav v-if="user" class="navbar">
-      <router-link to="/clientes" class="nav-link">Clientes</router-link>
-      <router-link to="/produtos" class="nav-link">Produtos</router-link>
-      <router-link to="/pedidos" class="nav-link">Pedidos</router-link>
-      <button @click="logout" class="nav-button">Desconectar</button>
-    </nav>
-    <div class="main-content">
-      <router-view/>
-    </div>
-  </div>
+  <v-app>
+    <v-navigation-drawer v-model="drawer" app>
+      <v-list>
+        <v-list-item
+          v-for="(item, index) in items"
+          :key="index"
+          @click="navigateTo(item.route)"
+        >
+          <v-list-item-title>{{ item.title }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item @click="logout">
+          <v-list-item-title>Desconectar</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+
+    <v-app-bar app>
+      <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-toolbar-title>Pizzaria NR</v-toolbar-title>
+    </v-app-bar>
+
+    <v-main>
+      <v-container>
+        <router-view />
+      </v-container>
+    </v-main>
+  </v-app>
 </template>
 
 <script>
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth } from './main';
-
 export default {
-  name: 'App',
   data() {
     return {
-      user: null
-    };
-  },
-  created() {
-    onAuthStateChanged(auth, (user) => {
-      this.user = user;
-    });
+      drawer: false,
+      items: [
+        { title: 'Clientes', route: '/clientes' },
+        { title: 'Produtos', route: '/produtos' },
+        { title: 'Pedidos', route: '/pedidos' },
+      ],
+    }
   },
   methods: {
-    async logout() {
-      try {
-        await signOut(auth);
-        this.$router.push('/login');
-      } catch (error) {
-        console.error('Erro ao desconectar:', error);
-      }
+    navigateTo(route) {
+      this.$router.push(route);
+    },
+    logout() {
+      this.$router.push('/');
     }
   }
 }
 </script>
 
 <style>
-.navbar {
-  background-color: #333;
-  padding: 7px;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  position: fixed;
-  width: 100%;
-  top: 0;
-  left: 0;
-  z-index: 1000;
-}
-
-.nav-link {
-  color: white;
-  text-decoration: none;
-}
-
-.nav-link:hover {
-  text-decoration: underline;
-}
-
-.nav-button {
-  padding: 10px 15px;
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.nav-button:hover {
-  background-color: #c82333;
-}
-
-.main-content {
-  margin-top: 50px;
-  padding: 20px;
-}
+@import '~vuetify/styles';
+@import '~@mdi/font/css/materialdesignicons.css';
 </style>

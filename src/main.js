@@ -1,10 +1,28 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
+import { createVuetify } from 'vuetify'
+import 'vuetify/styles'
+import '@mdi/font/css/materialdesignicons.css'
+import * as components from 'vuetify/components'
+import * as directives from 'vuetify/directives'
+import { aliases, mdi } from 'vuetify/iconsets/mdi'
+
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import './assets/styles.css';
+
+const vuetify = createVuetify({
+  components,
+  directives,
+  icons: {
+    defaultSet: 'mdi',
+    aliases,
+    sets: {
+      mdi,
+    },
+  },
+});
 
 const firebaseConfig = {
   apiKey: process.env.VUE_APP_FIREBASE_API_KEY,
@@ -25,6 +43,7 @@ app.config.globalProperties.$db = db;
 app.config.globalProperties.$auth = auth;
 
 app.use(router);
+app.use(vuetify);
 app.mount('#app');
 
 onAuthStateChanged(auth, (user) => {

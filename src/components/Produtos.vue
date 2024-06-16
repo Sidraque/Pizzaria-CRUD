@@ -1,29 +1,100 @@
 <template>
-  <div class="container">
-    <h2>Produtos</h2>
-    <div class="form-list-container">
-      <form @submit.prevent="addProduto" class="form">
-        <input v-model="nome" placeholder="Nome" required>
-        <input v-model.number="preco" placeholder="Preço" step="0.01" required>
-        <select v-model="categoria" required>
-          <option>Pizza</option>
-          <option>Bebida</option>
-          <option>Sobremesa</option>
-        </select>
-        <button type="submit">{{ editMode ? 'Atualizar' : 'Adicionar' }}</button>
-        <button v-if="editMode" class="cancel" @click="cancelEdit">Cancelar</button>
-      </form>
-      <ul class="product-list">
-        <li v-for="produto in produtos" :key="produto.id" class="product-item">
-          <span>{{ produto.nome }} - R$ {{ produto.preco.toFixed(2) }}</span>
-          <div class="actions">
-            <button @click="editProduto(produto)" class="edit">Editar</button>
-            <button @click="deleteProduto(produto.id)" class="delete">Excluir</button>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </div>
+  <v-container>
+    <v-card>
+      <v-card-title>
+        Produtos
+      </v-card-title>
+      <v-card-text>
+        <v-form ref="form" v-model="valid" @submit.prevent="addProduto">
+          <v-row>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="nome"
+                label="Nome"
+                :rules="[rules.required]"
+                required
+                outlined
+                prepend-inner-icon="mdi-food"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="preco"
+                label="Preço"
+                type="text"
+                :rules="[rules.required, rules.decimal]"
+                required
+                outlined
+                prepend-inner-icon="mdi-currency-usd"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-select
+                v-model="categoria"
+                :items="['Pizza', 'Bebida', 'Sobremesa']"
+                label="Categoria"
+                :rules="[rules.required]"
+                required
+                outlined
+                prepend-inner-icon="mdi-tag"
+              ></v-select>
+            </v-col>
+          </v-row>
+          <v-row class="pt-4">
+            <v-col>
+              <v-btn color="primary" type="submit" :disabled="!valid || !nome || !preco || !categoria">
+                <v-icon left>mdi-check-circle</v-icon>
+                {{ editMode ? 'Atualizar' : 'Adicionar' }}
+              </v-btn>
+            </v-col>
+            <v-col v-if="editMode">
+              <v-btn color="error" @click="cancelEdit">
+                <v-icon left>mdi-close-circle</v-icon>
+                Cancelar
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-form>
+
+        <v-divider class="my-4"></v-divider>
+
+        <v-list>
+          <v-list-item
+            v-for="produto in produtos"
+            :key="produto.id"
+            class="product-item"
+          >
+            <v-row class="align-center">
+              <v-col>
+                <v-list-item-content>
+                  <v-list-item-title>{{ produto.nome }} - R$ {{ produto.preco.toFixed(2) }}</v-list-item-title>
+                  <v-list-item-subtitle>{{ produto.categoria }}</v-list-item-subtitle>
+                </v-list-item-content>
+              </v-col>
+              <v-col class="d-flex justify-end">
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn icon small color="blue" @click="editProduto(produto)" v-bind="attrs" v-on="on">
+                      <v-icon small>mdi-pencil</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Editar</span>
+                </v-tooltip>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn icon small color="red" @click="deleteProduto(produto.id)" v-bind="attrs" v-on="on">
+                      <v-icon small>mdi-delete</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Excluir</span>
+                </v-tooltip>
+              </v-col>
+            </v-row>
+          </v-list-item>
+        </v-list>
+      </v-card-text>
+    </v-card>
+  </v-container>
 </template>
 
 <script>
@@ -34,12 +105,17 @@ export default {
   data() {
     return {
       nome: '',
-      preco: 0,
+      preco: '',
       categoria: '',
       produtos: [],
       editMode: false,
-      produtoId: null
-    }
+      produtoId: null,
+      valid: false,
+      rules: {
+        required: value => !!value || 'Campo obrigatório',
+        decimal: value => /^\d+(\.\d{1,2})?$/.test(value) || 'Deve ser um número com até duas casas decimais'
+      }
+    };
   },
   created() {
     const produtosCollection = collection(db, 'produtos');
@@ -84,133 +160,48 @@ export default {
     },
     resetForm() {
       this.nome = '';
-      this.preco = 0;
+      this.preco = '';
       this.categoria = '';
       this.produtoId = null;
     }
   }
-}
+};
 </script>
 
 <style scoped>
-.container {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+.v-container {
+  padding-top: 20px;
   width: 100%;
-  max-width: 1400px;
-  margin: 80px auto 20px; /* Ajuste conforme necessário para ficar abaixo do menu */
 }
-
-.form-list-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  background: #f7f7f7;
+.v-card {
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
-
-input, select {
+.v-divider {
+  margin: 20px 0;
+}
+.v-btn {
+  margin-right: 10px;
+  font-size: 14px;
+}
+.v-list-item {
+  background-color: #f5f5f5;
   margin-bottom: 10px;
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-button {
-  padding: 10px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 10px;
-}
-
-button:hover {
-  background-color: #218838;
-}
-
-button.cancel {
-  background-color: #dc3545;
-}
-
-button.cancel:hover {
-  background-color: #c82333;
-}
-
-h2 {
-  margin-bottom: 20px;
-  color: #333;
-  text-align: center;
-  font-size: 24px;
-}
-
-.product-list {
-  list-style: none;
-  padding: 0;
-  flex: 1;
-  background: #f7f7f7;
-  padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-
-.product-item {
-  background: #fff;
-  margin-bottom: 10px;
-  padding: 10px;
-  border-radius: 4px;
+.v-list-item-content {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
+}
+.v-list-item-action {
+  display: flex;
   align-items: center;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  margin-right: auto;
 }
-
-.actions {
-  display: flex;
-  gap: 10px;
+.v-list-item-action > * {
+  margin-right: 10px;
 }
-
-.product-item button {
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 5px 10px;
-  cursor: pointer;
-}
-
-.product-item button.edit {
-  background: #ffc107;
-}
-
-.product-item button.delete {
-  background: #dc3545;
-}
-
-.product-item button:hover {
-  opacity: 0.8;
-}
-
-@media (min-width: 768px) {
-  .form-list-container {
-    flex-direction: row;
-  }
-
-  form, .product-list {
-    flex: 1;
-    min-width: 0;
-  }
+.v-icon.small {
+  font-size: 18px;
 }
 </style>

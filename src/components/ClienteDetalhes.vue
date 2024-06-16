@@ -1,20 +1,48 @@
 <template>
-    <div class="container">
-      <h2>Detalhes do Cliente</h2>
-      <div class="cliente-detalhes">
-        <p><strong>Nome:</strong> {{ cliente.nome }}</p>
-        <p><strong>Rua:</strong> {{ cliente.rua }}</p>
-        <p><strong>Bairro:</strong> {{ cliente.bairro }}</p>
-        <p><strong>Número:</strong> {{ cliente.numero }}</p>
-        <p><strong>Cidade:</strong> {{ cliente.cidade }}</p>
-        <p><strong>CEP:</strong> {{ cliente.cep }}</p>
-        <p><strong>Estado:</strong> {{ cliente.estado }}</p>
-        <p><strong>Telefone:</strong> {{ cliente.telefone }}</p>
-        <p><strong>CPF:</strong> {{ cliente.cpf }}</p>
-        <p><strong>Sexo:</strong> {{ cliente.sexo }}</p>
-        <button @click="voltar">Voltar</button>
-      </div>
-    </div>
+    <v-container>
+      <v-card>
+        <v-card-title>
+          <h2>Detalhes do Cliente</h2>
+        </v-card-title>
+        <v-card-text>
+          <div class="cliente-detalhes">
+            <v-row>
+              <v-col cols="12" md="6">
+                <p><strong>Nome:</strong> {{ cliente.nome }}</p>
+              </v-col>
+              <v-col cols="12" md="6">
+                <p><strong>Rua:</strong> {{ cliente.rua }}</p>
+              </v-col>
+              <v-col cols="12" md="6">
+                <p><strong>Bairro:</strong> {{ cliente.bairro }}</p>
+              </v-col>
+              <v-col cols="12" md="6">
+                <p><strong>Número:</strong> {{ cliente.numero }}</p>
+              </v-col>
+              <v-col cols="12" md="6">
+                <p><strong>Cidade:</strong> {{ cliente.cidade }}</p>
+              </v-col>
+              <v-col cols="12" md="6">
+                <p><strong>CEP:</strong> {{ cliente.cep }}</p>
+              </v-col>
+              <v-col cols="12" md="6">
+                <p><strong>Estado:</strong> {{ cliente.estado }}</p>
+              </v-col>
+              <v-col cols="12" md="6">
+                <p><strong>Telefone:</strong> {{ cliente.telefone }}</p>
+              </v-col>
+              <v-col cols="12" md="6">
+                <p><strong>CPF:</strong> {{ cliente.cpf }}</p>
+              </v-col>
+              <v-col cols="12" md="6">
+                <p><strong>Sexo:</strong> {{ cliente.sexo }}</p>
+              </v-col>
+            </v-row>
+            <v-btn color="primary" @click="voltar">Voltar</v-btn>
+          </div>
+        </v-card-text>
+      </v-card>
+    </v-container>
   </template>
   
   <script>
@@ -22,19 +50,32 @@
   import { doc, getDoc } from 'firebase/firestore';
   
   export default {
+    props: {
+      id: {
+        type: String,
+        required: true
+      }
+    },
     data() {
       return {
         cliente: {}
       };
     },
     async created() {
-      const clienteId = this.$route.params.id;
-      const docRef = doc(db, 'clientes', clienteId);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        this.cliente = docSnap.data();
-      } else {
-        console.log('Nenhum documento encontrado!');
+      try {
+        if (this.id) {
+          const docRef = doc(db, 'clientes', this.id);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            this.cliente = docSnap.data();
+          } else {
+            console.log('Nenhum documento encontrado!');
+          }
+        } else {
+          console.log('ID do cliente não está definido.');
+        }
+      } catch (error) {
+        console.error('Erro ao buscar detalhes do cliente:', error);
       }
     },
     methods: {
@@ -46,35 +87,31 @@
   </script>
   
   <style scoped>
-  .container {
-    background: white;
+  .v-container {
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 600px;
-    margin: 20px auto;
   }
-  
+  .v-card {
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+  .v-card-title {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+  }
   .cliente-detalhes {
     margin-top: 20px;
   }
-  
-  p {
-    margin: 10px 0;
+  .v-row {
+    margin-bottom: 20px;
   }
-  
-  button {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+  .v-col p {
+    margin: 5px 0;
+    font-size: 16px;
+    line-height: 1.6;
   }
-  
-  button:hover {
-    background-color: #0056b3;
+  .v-btn {
+    margin-top: 20px;
   }
   </style>
   
