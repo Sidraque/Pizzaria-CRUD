@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-card>
-      <v-card-title>
+      <v-card-title class="card-title">
         Clientes
       </v-card-title>
       <v-card-text>
@@ -287,6 +287,15 @@ export default {
 </script>
 
 <style scoped>
+
+.v-card-title {
+  font-size: 25px;
+  margin-bottom: 30px;
+  font-weight: bold;
+  color: #3f51b5;
+  text-align: center;
+}
+
 .v-container {
   padding-top: 20px;
   width: 100%;
