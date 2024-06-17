@@ -132,8 +132,7 @@ export default {
 @import "~@mdi/font/css/materialdesignicons.css";
 
 .v-navigation-drawer {
-  background: #3f51b5;
-  color: #fff;
+  color: #000000;
 }
 
 .v-list-item {
@@ -145,8 +144,8 @@ export default {
 }
 
 .v-app-bar {
-  background: #3f51b5;
-  color: #fff;
+  background: #ffffff;
+  color: #000000;
 }
 
 .v-toolbar-title {
