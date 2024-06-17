@@ -14,7 +14,8 @@
     "firebase": "^10.12.2",
     "vue": "^3.2.13",
     "vue-router": "^4.3.2",
-    "vuetify": "^3.6.0-beta.0.0"
+    "vuetify": "^3.6.0-beta.0.0",
+    "@mdi/font": "^6.5.95"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
