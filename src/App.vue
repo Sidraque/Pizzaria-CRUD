@@ -136,7 +136,7 @@ export default {
 }
 
 .v-list-item {
-  color: #fff;
+  color: #000000;
 }
 
 .v-list-item-title {
@@ -153,7 +153,7 @@ export default {
 }
 
 .v-btn {
-  color: #fff;
+  color: #000000;
 }
 
 .title {
