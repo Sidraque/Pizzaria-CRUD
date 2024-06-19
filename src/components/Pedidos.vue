@@ -25,23 +25,26 @@
             </v-col>
             <v-col cols="12" md="6">
               <v-select
-                v-model="produtoId"
+                v-model="selectedProdutos"
                 :items="produtos"
                 item-title="nome"
                 item-value="id"
-                label="Produto"
-                @change="updateProdutoSelecionado"
+                label="Produtos"
+                @change="updateProdutosSelecionados"
                 :rules="[rules.required]"
+                multiple
+                chips
                 required
                 outlined
                 prepend-inner-icon="mdi-package-variant"
               ></v-select>
             </v-col>
-            <v-col cols="12" md="6">
+            <v-col cols="12" md="6" v-for="produto in selectedProdutosDetails" :key="produto.id">
               <v-text-field
-                v-model.number="quantidade"
-                label="Quantidade"
+                v-model.number="produto.quantidade"
+                :label="`Quantidade - ${produto.nome}`"
                 type="number"
+                min="1"
                 @input="calcularTotal"
                 :rules="[rules.required, rules.number]"
                 required
@@ -56,6 +59,7 @@
                 readonly
                 outlined
                 prepend-inner-icon="mdi-currency-usd"
+                :value="formatPriceValue(total)"
               ></v-text-field>
             </v-col>
             <v-col cols="12" md="6">
@@ -131,9 +135,13 @@
                 <v-list-item-content>
                   <v-list-item-title class="list-item-title">
                     {{ pedido.clienteNome }} <br>
-                    {{ pedido.produtoNome }} - {{ pedido.categoria }} <br>
-                    Quantidade: {{ pedido.quantidade }} <br>
-                    Total: R$ {{ pedido.total.toFixed(2) }}
+                    Produtos:
+                    <ul>
+                      <li v-for="produto in pedido.produtos" :key="produto.id">
+                        {{ produto.nome }} - {{ produto.categoria }} - Quantidade: {{ produto.quantidade }} - Total: R$ {{ formatDisplayPrice(produto.total || 0) }}
+                      </li>
+                    </ul>
+                    Total do Pedido: R$ {{ formatDisplayPrice(pedido.total || 0) }}
                   </v-list-item-title>
                   <v-list-item-subtitle class="list-item-subtitle">
                     <v-icon left>
@@ -182,9 +190,13 @@
                   <v-list-item-content>
                     <v-list-item-title class="list-item-title">
                       {{ pedido.clienteNome }} <br>
-                      {{ pedido.produtoNome }} - {{ pedido.categoria }} <br>
-                      Quantidade: {{ pedido.quantidade }} <br>
-                      Total: R$ {{ pedido.total.toFixed(2) }}
+                      Produtos:
+                      <ul>
+                        <li v-for="produto in pedido.produtos" :key="produto.id">
+                          {{ produto.nome }} - {{ produto.categoria }} - Quantidade: {{ produto.quantidade }} - Total: R$ {{ formatDisplayPrice(produto.total || 0) }}
+                        </li>
+                      </ul>
+                      Total do Pedido: R$ {{ formatDisplayPrice(pedido.total || 0) }}
                       <br>
                       Data de Finalização: {{ formatDate(pedido.dataFinalizacao) }}
                     </v-list-item-title>
@@ -217,17 +229,17 @@ import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimest
 export default {
   setup() {
     const clienteId = ref('');
-    const produtoId = ref('');
+    const selectedProdutos = ref([]);
+    const selectedProdutosDetails = ref([]);
     const quantidade = ref(1);
     const total = ref(0);
-    const dataPedido = ref('');
+    const dataPedido = ref(new Date().toISOString().substr(0, 10));
     const dataFinalizacao = ref(null);
     const status = ref('Pendente');
     const pedidos = ref([]);
     const pedidosFinalizados = ref([]);
     const clientes = ref([]);
     const produtos = ref([]);
-    const produtoSelecionado = ref(null);
     const editMode = ref(false);
     const pedidoId = ref(null);
     const filtroStatus = ref('');
@@ -236,7 +248,7 @@ export default {
     const filtrosOptions = ref(['Pendente', 'Em preparo', 'Enviado']);
     const rules = {
       required: value => !!value || 'Campo obrigatório',
-      number: value => !isNaN(value) || 'Deve ser um número'
+      number: value => value > 0 || 'Deve ser um número positivo'
     };
     const currentPage = ref(1);
     const itemsPerPage = 5;
@@ -249,44 +261,52 @@ export default {
     };
 
     const validForm = computed(() => {
-      return clienteId.value && produtoId.value && quantidade.value > 0 && dataPedido.value && status.value;
+      return clienteId.value && selectedProdutosDetails.value.length > 0 && dataPedido.value && status.value;
     });
 
     const statusOptionsComputed = computed(() => {
       return editMode.value ? statusOptions.value : ['Pendente'];
     });
 
-    const updateProdutoSelecionado = () => {
-      produtoSelecionado.value = produtos.value.find(produto => produto.id === produtoId.value);
+    const updateProdutosSelecionados = () => {
+      selectedProdutosDetails.value = selectedProdutos.value.map(produtoId => {
+        const produto = produtos.value.find(produto => produto.id === produtoId);
+        const produtoExistente = selectedProdutosDetails.value.find(p => p.id === produtoId);
+        return {
+          ...produto,
+          quantidade: produtoExistente ? produtoExistente.quantidade : 1 // Mantém a quantidade existente, se houver
+        };
+      });
       calcularTotal();
     };
 
     const calcularTotal = () => {
-      if (produtoSelecionado.value) {
-        total.value = (produtoSelecionado.value.preco * quantidade.value).toFixed(2);
-      } else {
-        total.value = 0;
-      }
+      let totalValue = 0;
+      selectedProdutosDetails.value.forEach(produto => {
+        totalValue += produto.preco * produto.quantidade;
+      });
+      total.value = formatDisplayPrice(totalValue);
     };
 
-    watch(produtoId, updateProdutoSelecionado);
-    watch(quantidade, calcularTotal);
+    watch(selectedProdutos, updateProdutosSelecionados);
 
     const addPedido = async () => {
       const pedidosCollection = collection(db, 'pedidos');
       const cliente = clientes.value.find(cliente => cliente.id === clienteId.value);
-      const produto = produtos.value.find(produto => produto.id === produtoId.value);
       const novoPedido = {
         clienteId: clienteId.value,
-        produtoId: produtoId.value,
-        quantidade: quantidade.value,
-        total: parseFloat(total.value),
+        produtos: selectedProdutosDetails.value.map(produto => ({
+          id: produto.id,
+          nome: produto.nome,
+          categoria: produto.categoria,
+          quantidade: produto.quantidade,
+          total: parseFloat(formatPriceValue(produto.preco * produto.quantidade).replace(/\./g, '').replace(',', '.'))
+        })),
+        total: parseFloat(total.value.replace(/\./g, '').replace(',', '.')),
         dataPedido: dataPedido.value,
         dataFinalizacao: status.value === 'Entregue' ? serverTimestamp() : null,
         status: status.value,
-        clienteNome: cliente ? cliente.nome : '',
-        produtoNome: produto ? produto.nome : '',
-        categoria: produto ? produto.categoria : ''
+        clienteNome: cliente ? cliente.nome : ''
       };
       if (editMode.value && pedidoId.value) {
         const pedidoDoc = doc(db, 'pedidos', pedidoId.value);
@@ -305,14 +325,19 @@ export default {
 
     const editPedido = (pedido) => {
       clienteId.value = pedido.clienteId;
-      produtoId.value = pedido.produtoId;
-      quantidade.value = pedido.quantidade;
-      total.value = pedido.total;
+      selectedProdutos.value = pedido.produtos.map(produto => produto.id);
+      selectedProdutosDetails.value = pedido.produtos.map(produto => ({
+        id: produto.id,
+        nome: produto.nome,
+        categoria: produto.categoria,
+        preco: produto.preco,
+        quantidade: produto.quantidade
+      }));
+      total.value = formatPriceValue(pedido.total);
       dataPedido.value = pedido.dataPedido;
       dataFinalizacao.value = pedido.dataFinalizacao;
       status.value = pedido.status;
       pedidoId.value = pedido.id;
-      produtoSelecionado.value = produtos.value.find(produto => produto.id === produtoId.value);
       editMode.value = true;
       calcularTotal();
     };
@@ -324,14 +349,13 @@ export default {
 
     const resetForm = () => {
       clienteId.value = '';
-      produtoId.value = '';
-      quantidade.value = 1;
-      total.value = 0;
-      dataPedido.value = '';
+      selectedProdutos.value = [];
+      selectedProdutosDetails.value = [];
+      total.value = formatDisplayPrice(0);
+      dataPedido.value = new Date().toISOString().substr(0, 10);
       dataFinalizacao.value = null;
       status.value = 'Pendente';
       pedidoId.value = null;
-      produtoSelecionado.value = null;
     };
 
     const removerFiltro = () => {
@@ -346,6 +370,16 @@ export default {
       if (!date || !date.seconds) return '';
       const d = new Date(date.seconds * 1000);
       return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+    };
+
+    const formatPriceValue = (value) => {
+      let formattedValue = value != null ? value.toString().replace('.', ',') : '0,00';
+      formattedValue = formattedValue.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      return formattedValue;
+    };
+
+    const formatDisplayPrice = (value) => {
+      return value != null ? value.toFixed(2).replace('.', ',') : '0,00';
     };
 
     onMounted(() => {
@@ -392,7 +426,8 @@ export default {
 
     return {
       clienteId,
-      produtoId,
+      selectedProdutos,
+      selectedProdutosDetails,
       quantidade,
       total,
       dataPedido,
@@ -402,7 +437,6 @@ export default {
       pedidosFinalizados,
       clientes,
       produtos,
-      produtoSelecionado,
       editMode,
       pedidoId,
       validForm,
@@ -410,7 +444,7 @@ export default {
       filtrosOptions,
       statusIcons,
       rules,
-      updateProdutoSelecionado,
+      updateProdutosSelecionados,
       calcularTotal,
       addPedido,
       deletePedido,
@@ -425,7 +459,9 @@ export default {
       modalFinalizados,
       abrirModalFinalizados,
       removerFiltro,
-      formatDate
+      formatDate,
+      formatPriceValue,
+      formatDisplayPrice
     };
   }
 };

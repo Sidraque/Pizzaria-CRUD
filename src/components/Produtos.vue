@@ -26,6 +26,7 @@
                 required
                 outlined
                 prepend-inner-icon="mdi-currency-usd"
+                @input="formatPrice"
               ></v-text-field>
             </v-col>
             <v-col cols="12" md="6">
@@ -67,7 +68,7 @@
             <v-row class="align-center">
               <v-col>
                 <v-list-item-content>
-                  <v-list-item-title>{{ produto.nome }} - R$ {{ produto.preco.toFixed(2) }}</v-list-item-title>
+                  <v-list-item-title>{{ produto.nome }} - R$ {{ formatDisplayPrice(produto.preco) }}</v-list-item-title>
                   <v-list-item-subtitle>{{ produto.categoria }}</v-list-item-subtitle>
                 </v-list-item-content>
               </v-col>
@@ -113,7 +114,7 @@ export default {
       valid: false,
       rules: {
         required: value => !!value || 'Campo obrigatório',
-        decimal: value => /^\d+(\.\d{1,2})?$/.test(value) || 'Deve ser um número com até duas casas decimais'
+        decimal: value => /^[0-9]+(\.[0-9]{3})*(,[0-9]{2})?$/.test(value) || 'Deve ser um número com até duas casas decimais'
       }
     };
   },
@@ -130,14 +131,14 @@ export default {
         const produtoDoc = doc(db, 'produtos', this.produtoId);
         await updateDoc(produtoDoc, {
           nome: this.nome,
-          preco: parseFloat(this.preco),
+          preco: this.parsePrice(this.preco),
           categoria: this.categoria
         });
         this.editMode = false;
       } else {
         await addDoc(produtosCollection, {
           nome: this.nome,
-          preco: parseFloat(this.preco),
+          preco: this.parsePrice(this.preco),
           categoria: this.categoria
         });
       }
@@ -149,7 +150,7 @@ export default {
     },
     editProduto(produto) {
       this.nome = produto.nome;
-      this.preco = produto.preco;
+      this.preco = this.formatPriceValue(produto.preco);
       this.categoria = produto.categoria;
       this.produtoId = produto.id;
       this.editMode = true;
@@ -163,13 +164,30 @@ export default {
       this.preco = '';
       this.categoria = '';
       this.produtoId = null;
+    },
+    formatPrice(event) {
+      let value = event.target.value.replace(/\D/g, '');
+      value = (value / 100).toFixed(2) + '';
+      value = value.replace(".", ",");
+      value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+      this.preco = value;
+    },
+    formatPriceValue(value) {
+      let formattedValue = value.toString().replace('.', ',');
+      formattedValue = formattedValue.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      return formattedValue;
+    },
+    parsePrice(value) {
+      return parseFloat(value.replace(/\./g, '').replace(',', '.'));
+    },
+    formatDisplayPrice(value) {
+      return value.toFixed(2).replace('.', ',');
     }
   }
 };
 </script>
 
 <style scoped>
-
 .v-card-title {
   font-size: 25px;
   margin-bottom: 30px;
