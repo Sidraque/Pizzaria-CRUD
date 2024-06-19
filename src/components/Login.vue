@@ -51,15 +51,33 @@ export default {
     const router = useRouter();
 
     const login = () => {
+      if (!/\S+@\S+\.\S+/.test(email.value)) {
+        alert('Por favor, insira um email válido.');
+        return;
+      }
+
       const auth = getAuth();
       signInWithEmailAndPassword(auth, email.value, password.value)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          console.log('Usuário logado:', user);
+        .then(() => {
           router.push('/clientes');
         })
         .catch((error) => {
-          console.error('Erro ao fazer login:', error);
+          switch (error.code) {
+            case 'auth/user-not-found':
+              alert('Email não encontrado. Por favor, verifique o email e tente novamente.');
+              break;
+            case 'auth/wrong-password':
+              alert('Senha incorreta. Por favor, tente novamente.');
+              break;
+            case 'auth/invalid-email':
+              alert('Email inválido. Por favor, verifique o email e tente novamente.');
+              break;
+            case 'auth/invalid-credential':
+              alert('Credencial inválida. Por favor, verifique suas credenciais e tente novamente.');
+              break;
+            default:
+              alert('Erro ao fazer login: ' + error.message);
+          }
         });
     };
 
