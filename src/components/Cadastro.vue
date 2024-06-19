@@ -9,6 +9,7 @@
               <v-text-field
                 v-model="nome"
                 label="Nome"
+                :rules="[rules.required]"
                 required
                 outlined
                 prepend-inner-icon="mdi-account"
@@ -16,14 +17,17 @@
               <v-text-field
                 v-model="cpf"
                 label="CPF"
+                :rules="[rules.required, rules.cpf]"
                 required
                 outlined
                 prepend-inner-icon="mdi-card-account-details"
+                @input="handleCpfInput"
               ></v-text-field>
               <v-text-field
                 v-model="dataNascimento"
                 label="Data de Nascimento"
                 type="date"
+                :rules="[rules.required]"
                 required
                 outlined
                 prepend-inner-icon="mdi-calendar"
@@ -32,34 +36,34 @@
                 v-model="email"
                 label="Email"
                 type="email"
+                :rules="[rules.required, rules.email]"
                 required
                 outlined
                 prepend-inner-icon="mdi-email"
-                :rules="[emailRule]"
                 @blur="checkEmailExists"
               ></v-text-field>
               <v-text-field
                 v-model="password"
                 :type="showPassword ? 'text' : 'password'"
                 label="Senha"
+                :rules="[rules.required, rules.password]"
                 required
                 outlined
                 prepend-inner-icon="mdi-lock"
                 :append-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
                 @click:append="toggleShowPassword"
-                :rules="[passwordRule]"
                 @input="checkPasswordStrength"
               ></v-text-field>
               <v-text-field
                 v-model="confirmPassword"
                 :type="showConfirmPassword ? 'text' : 'password'"
                 label="Confirmar Senha"
+                :rules="[rules.required, rules.confirmPassword]"
                 required
                 outlined
                 prepend-inner-icon="mdi-lock"
                 :append-icon="showConfirmPassword ? 'mdi-eye-off' : 'mdi-eye'"
                 @click:append="toggleShowConfirmPassword"
-                :rules="[confirmPasswordRule]"
               ></v-text-field>
               <v-progress-linear
                 :value="passwordStrengthValue"
@@ -92,6 +96,7 @@ import { ref } from 'vue';
 import { getAuth, createUserWithEmailAndPassword, fetchSignInMethodsForEmail } from 'firebase/auth';
 import { useRouter } from 'vue-router';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import { maskCpf } from '../js/maskUtils';
 
 export default {
   setup() {
@@ -112,9 +117,13 @@ export default {
     const snackbarColor = ref('');
     const router = useRouter();
 
-    const emailRule = (v) => !!v || 'E-mail é obrigatório';
-    const passwordRule = (v) => !!v && v.length >= 8 && /[!@#$%^&*(),.?":{}|<>]/g.test(v) || 'Senha deve ter no mínimo 8 caracteres e um caractere especial';
-    const confirmPasswordRule = (v) => v === password.value || 'Senhas não conferem';
+    const rules = {
+      required: (v) => !!v || 'Campo obrigatório',
+      cpf: (v) => /^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(v) || 'CPF inválido',
+      email: (v) => /.+@.+\..+/.test(v) || 'E-mail inválido',
+      password: (v) => v.length >= 8 && /[!@#$%^&*(),.?":{}|<>]/g.test(v) || 'Senha deve ter no mínimo 8 caracteres e um caractere especial',
+      confirmPassword: (v) => v === password.value || 'Senhas não conferem'
+    };
 
     const register = async () => {
       const auth = getAuth();
@@ -188,6 +197,10 @@ export default {
       }
     };
 
+    const handleCpfInput = () => {
+      cpf.value = maskCpf(cpf.value);
+    };
+
     const toggleShowPassword = () => {
       showPassword.value = !showPassword.value;
     };
@@ -211,15 +224,14 @@ export default {
       checkPasswordStrength, 
       toggleShowPassword, 
       toggleShowConfirmPassword, 
-      emailRule, 
-      passwordRule, 
-      confirmPasswordRule, 
+      rules,
       canRegister, 
       showPassword, 
       showConfirmPassword,
       snackbar,
       snackbarMessage,
-      snackbarColor
+      snackbarColor,
+      handleCpfInput
     };
   }
 };

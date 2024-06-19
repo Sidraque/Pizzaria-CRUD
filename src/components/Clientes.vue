@@ -41,18 +41,19 @@
             </v-col>
             <v-col cols="12" md="6">
               <v-text-field
-                v-model="cidade"
-                label="Cidade"
-                :rules="[rules.required]"
+                v-model="cep"
+                label="CEP"
+                :rules="[rules.required, rules.cep]"
+                @input="handleCepInput"
+                @blur="buscaCep"
                 required
               ></v-text-field>
             </v-col>
             <v-col cols="12" md="6">
               <v-text-field
-                v-model="cep"
-                label="CEP"
+                v-model="cidade"
+                label="Cidade"
                 :rules="[rules.required]"
-                @blur="buscaCep"
                 required
               ></v-text-field>
             </v-col>
@@ -68,7 +69,8 @@
               <v-text-field
                 v-model="telefone"
                 label="Telefone"
-                :rules="[rules.required]"
+                :rules="[rules.required, rules.telefone]"
+                @input="handleTelefoneInput"
                 required
               ></v-text-field>
             </v-col>
@@ -76,7 +78,8 @@
               <v-text-field
                 v-model="cpf"
                 label="CPF"
-                :rules="[rules.required]"
+                :rules="[rules.required, rules.cpf]"
+                @input="handleCpfInput"
                 required
               ></v-text-field>
             </v-col>
@@ -160,6 +163,23 @@
 import axios from 'axios';
 import { db } from '../main';
 import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { defineRule, configure } from 'vee-validate';
+import { required, numeric } from '@vee-validate/rules';
+import { maskCpf, maskCep, maskTelefone } from '../js/maskUtils';
+
+defineRule('required', required);
+defineRule('numeric', numeric);
+
+configure({
+  generateMessage: ctx => {
+    const messages = {
+      required: `O campo ${ctx.field} é obrigatório.`,
+      numeric: `O campo ${ctx.field} deve conter apenas números.`,
+    };
+
+    return messages[ctx.rule.name] || `O campo ${ctx.field} é inválido.`;
+  },
+});
 
 export default {
   data() {
@@ -179,7 +199,10 @@ export default {
       clienteId: null,
       valid: false,
       rules: {
-        required: value => !!value || 'Campo obrigatório'
+        required: value => !!value || 'Campo obrigatório',
+        cpf: value => /\d{3}\.\d{3}\.\d{3}-\d{2}/.test(value) || 'CPF inválido',
+        telefone: value => /\(\d{2}\) \d{4,5}-\d{4}/.test(value) || 'Telefone inválido',
+        cep: value => /\d{5}-\d{3}/.test(value) || 'CEP inválido'
       }
     }
   },
@@ -190,6 +213,15 @@ export default {
     });
   },
   methods: {
+    handleCpfInput() {
+      this.cpf = maskCpf(this.cpf);
+    },
+    handleCepInput() {
+      this.cep = maskCep(this.cep);
+    },
+    handleTelefoneInput() {
+      this.telefone = maskTelefone(this.telefone);
+    },
     async addCliente() {
       const isValid = await this.$refs.form.validate();
       if (!isValid) {
